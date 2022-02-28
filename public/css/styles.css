@@ -3,21 +3,24 @@ body {
 }
 
 .centered {
-	padding-top: 150px;
 	text-align: center;
 }
 
 .secret-text {
 	text-align: center;
-	font-size: 2rem;
-	color: #fff;
-	background-color: #000;
+	font-size: 1.5rem;
+	font-family: "Ubuntu";
+	font-weight: 100;
+	letter-spacing: 0.15rem;
+	color: #ebebeb;
+	background-color: #16181ad7;
+	border-radius: 0.25rem;
 }
 hr {
 	padding-top: 5rem;
 }
 .btn {
-	width: 10rem;
+	width: 12rem;
 	margin-left: 1rem;
 	margin-right: 1rem;
 }
