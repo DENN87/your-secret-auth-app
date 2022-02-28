@@ -3,7 +3,7 @@ body {
 }
 
 .centered {
-	padding-top: 200px;
+	padding-top: 150px;
 	text-align: center;
 }
 
@@ -12,4 +12,30 @@ body {
 	font-size: 2rem;
 	color: #fff;
 	background-color: #000;
+}
+hr {
+	padding-top: 5rem;
+}
+.btn {
+	width: 10rem;
+	margin-left: 1rem;
+	margin-right: 1rem;
+}
+.btn-dark:hover {
+	background-color: black;
+	border: 1px solid #e8ecef;
+}
+.btn-light:hover {
+	background-color: #ffffff;
+	border: 1px solid #e8ecef;
+}
+.margin-left-none {
+	margin-left: 0;
+}
+.form-control:focus {
+	color: #212529;
+	background-color: #fff;
+	border-color: #bbbbbb;
+	outline: 0;
+	box-shadow: 0 0 0 0.25rem rgba(61, 61, 61, 0.25);
 }
