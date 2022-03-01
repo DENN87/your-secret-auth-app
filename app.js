@@ -46,8 +46,17 @@ const User = new mongoose.model("User", userSchema);
 
 passport.use(User.createStrategy());
 
-passport.serializeUser(User.serializeUser()); // encrypting user info (email & pass)
-passport.deserializeUser(User.deserializeUser()); // decrypting user info (email & pass)
+// encrypting user info (email & pass)
+passport.serializeUser((user, done) => {
+	done(null, user.id);
+});
+
+// decrypting user info (email & pass)
+passport.deserializeUser((id, done) => {
+	User.findById(id, (err, user) => {
+		done(err, user);
+	});
+});
 
 passport.use(
 	new GoogleStrategy(
@@ -57,7 +66,8 @@ passport.use(
 			callbackURL: "http://localhost:3000/auth/google/secrets",
 			userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
 		},
-		(accessToken, refreshToken, profile, cb) => {
+		function (accessToken, refreshToken, profile, cb) {
+			console.log(profile);
 			User.findOrCreate({ googleId: profile.id }, function (err, user) {
 				return cb(err, user);
 			});
@@ -88,6 +98,23 @@ app.route("/login")
 			}
 		});
 	});
+
+app.get(
+	"/auth/google",
+	passport.authenticate("google", { scope: ["openid", "profile", "email"] })
+);
+
+app.get(
+	"/auth/google/secrets",
+	passport.authenticate("google", {
+		failureRedirect: "/login",
+		failureMessage: true,
+	}),
+	function (req, res) {
+		// Successful authentication, redirect home.
+		res.redirect("secrets");
+	}
+);
 
 app.route("/register")
 	.get((req, res) => {
