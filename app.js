@@ -24,9 +24,26 @@ const User = new mongoose.model("User", userSchema);
 app.get("/", (req, res) => {
 	res.render("home");
 });
-app.get("/login", (req, res) => {
-	res.render("login");
-});
+app.route("/login")
+	.get((req, res) => {
+		res.render("login");
+	})
+	.post((req, res) => {
+		const userName = req.body.username;
+		const userPass = req.body.password;
+		/* Looking for a user into MongoDB with amatching username and password field  from EJS file*/
+		User.findOne({ email: userName }, (err, foundUser) => {
+			if (!err) {
+				if (foundUser) {
+					if (foundUser.password === userPass) {
+						res.render("secrets");
+					}
+				}
+			} else {
+				console.log(err);
+			}
+		});
+	});
 app.route("/register")
 	.get((req, res) => {
 		res.render("register");
@@ -36,8 +53,10 @@ app.route("/register")
 		/* Creating the newUser with the mongoose schema */
 		const newUser = new User({
 			/* saving the fields we are getting from POST action of the form in EJS file */
-			email: req.body.username, // username is the NAME field from EJS file of the coresping input
-			password: req.body.password, // password is the NAME field from EJS file of the coresping input
+			email: req.body.username,
+			// username is the NAME field from EJS file of the coresping input
+			password: req.body.password,
+			// password is the NAME field from EJS file of the coresping input
 		});
 		/* Saving the newUser created above to the mongoDB */
 		newUser.save((err) => {
