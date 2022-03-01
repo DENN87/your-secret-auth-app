@@ -42,3 +42,20 @@ hr {
 	outline: 0;
 	box-shadow: 0 0 0 0.25rem rgba(61, 61, 61, 0.25);
 }
+.col-xsm-4 .card-body {
+	padding-top: 16px;
+	padding-bottom: 16px;
+	padding-left: 16;
+	padding-right: 16;
+}
+.card-body .btn-google {
+	background-color: #ff3c00;
+}
+.card-body .btn-google:hover {
+	background-color: #c92f00;
+	color: #ffffff;
+}
+.btn-google {
+	width: auto;
+	margin: 0;
+}
