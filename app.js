@@ -3,7 +3,7 @@ const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const mongooseEncryption = require("mongoose-encryption");
+const md5 = require("md5");
 
 const app = express();
 
@@ -19,12 +19,6 @@ const userSchema = new mongoose.Schema({
 	email: String,
 	password: String,
 });
-
-userSchema.plugin(mongooseEncryption, {
-	secret: process.env.DB_SECRET,
-	encryptedFields: ["password"],
-});
-// including the field encryptedFields: [] will be the only encrypted field (not the username)
 
 /*  use userSchema to setup a mongoose model */
 const User = new mongoose.model("User", userSchema);
@@ -68,7 +62,7 @@ app.route("/register")
 			/* saving the fields we are getting from POST action of the form in EJS file */
 			email: req.body.username,
 			// username is the NAME field from EJS file of the corresponding input
-			password: req.body.password,
+			password: md5(req.body.password),
 			// password is the NAME field from EJS file of the corresponding input
 		});
 		/* Saving the newUser created above to the mongoDB */
