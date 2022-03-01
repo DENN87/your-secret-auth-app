@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const passport = require("passport");
 const passportLocalMongoose = require("passport-local-mongoose");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const findOrCreate = require("mongoose-findorcreate");
 
 const app = express();
 
@@ -37,6 +39,7 @@ const userSchema = new mongoose.Schema({
 
 /* hash and salt passwords and save the users into mongoDB*/
 userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(findOrCreate);
 
 /*  use userSchema to setup a mongoose model */
 const User = new mongoose.model("User", userSchema);
@@ -45,6 +48,22 @@ passport.use(User.createStrategy());
 
 passport.serializeUser(User.serializeUser()); // encrypting user info (email & pass)
 passport.deserializeUser(User.deserializeUser()); // decrypting user info (email & pass)
+
+passport.use(
+	new GoogleStrategy(
+		{
+			clientID: process.env.GOOGLE_CLIENT_ID,
+			clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+			callbackURL: "http://localhost:3000/auth/google/secrets",
+			userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+		},
+		(accessToken, refreshToken, profile, cb) => {
+			User.findOrCreate({ googleId: profile.id }, function (err, user) {
+				return cb(err, user);
+			});
+		}
+	)
+);
 
 /* Routes here */
 app.get("/", (req, res) => {
