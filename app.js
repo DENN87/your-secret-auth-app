@@ -3,9 +3,6 @@ const express = require("express");
 const ejs = require("ejs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-
-const saltRounds = 10;
 
 const app = express();
 
@@ -36,48 +33,13 @@ app.route("/login")
 	.post((req, res) => {
 		const userName = req.body.username;
 		const userPass = req.body.password;
-		/* Looking for a user into MongoDB with a matching username from EJS file*/
-		User.findOne({ email: userName }, (err, foundUser) => {
-			if (!err) {
-				if (foundUser) {
-					// checking foundUser password equals to input password from EJS file.
-					bcrypt.compare(userPass, foundUser.password).then((result) => {
-						// result == true
-						if (result === true) {
-							res.render("secrets");
-						}
-					});
-				}
-			} else {
-				console.log(err);
-			}
-		});
 	});
 app.route("/register")
 	.get((req, res) => {
 		res.render("register");
 	})
 	.post((req, res) => {
-		bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
-			// Store hash in your password DB.
-			/* Creating the newUser with the mongoose schema */
-			const newUser = new User({
-				/* saving the fields we are getting from POST action of the form in EJS file */
-				email: req.body.username,
-				// username is the NAME field from EJS file of the corresponding input
-				password: hash,
-				// password is the NAME field from EJS file of the corresponding input
-			});
-			/* Saving the newUser created above to the mongoDB */
-			newUser.save((err) => {
-				if (err) {
-					console.log(err);
-				} else {
-					/* Rendering the secrets EJS file only if the user is created and logged in */
-					res.render("secrets");
-				}
-			});
-		});
+		res.render("secrets");
 	});
 
 app.listen(process.env.PORT || 3000, () => {
