@@ -20,9 +20,8 @@ const userSchema = new mongoose.Schema({
 	password: String,
 });
 
-const secret = "VERY_SECRET_EXPRESSION";
 userSchema.plugin(mongooseEncryption, {
-	secret: secret,
+	secret: process.env.DB_SECRET,
 	encryptedFields: ["password"],
 });
 // including the field encryptedFields: [] will be the only encrypted field (not the username)
