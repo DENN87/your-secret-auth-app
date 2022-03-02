@@ -9,6 +9,7 @@ const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require("mongoose-findorcreate");
 const FacebookStrategy = require("passport-facebook");
+const TwitterStrategy = require("passport-twitter");
 
 const app = express();
 
@@ -22,8 +23,14 @@ app.use(
 		secret: process.env.SESSION_SECRET,
 		resave: false,
 		saveUninitialized: false,
+		cookie: {},
 	})
 );
+
+if (app.get("env") === "production") {
+	// Serve secure cookies, requires HTTPS
+	session.cookie.secure = true;
+}
 
 /* Initialize passport */
 app.use(passport.initialize());
@@ -92,14 +99,34 @@ passport.use(
 		}
 	)
 );
-/* TwitterStrategy logic */
 
-/* Register/Login Routes for LinkedIn */
-app.get("/auth/facebook", passport.authenticate("facebook"));
+/* TwitterStrategy logic */
+passport.use(
+	new TwitterStrategy(
+		{
+			consumerKey: process.env.TWITTER_CONSUMER_KEY,
+			consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
+			callbackURL: "http://127.0.0.1:3000/auth/twitter/secrets",
+			access_token_key: process.env.TWITTER_CONSUMER_BEARER_TOKEN,
+			clientID: process.env.TWITTER_CLIENT_ID,
+			clientSecret: process.env.TWITTER_CLIENT_SECRET,
+			authorizationURL: "https://api.twitter.com/oauth/authenticate",
+			tokenURL: "https://api.twitter.com/oauth/access_token",
+		},
+		function (token, tokenSecret, profile, cb) {
+			User.findOrCreate({ twitterId: profile.id }, function (err, user) {
+				return cb(err, profile);
+			});
+		}
+	)
+);
+
+/* Register/Login Routes for Twitter */
+app.get("/auth/twitter", passport.authenticate("twitter"));
 
 app.get(
-	"/auth/facebook/secrets",
-	passport.authenticate("facebook", { failureRedirect: "/login" }),
+	"/auth/twitter/secrets",
+	passport.authenticate("twitter", { failureRedirect: "/login" }),
 	function (req, res) {
 		// Successful authentication, redirect home.
 		res.redirect("/secrets");
@@ -119,7 +146,10 @@ app.get(
 );
 
 /* Register/Login Routes for Google */
-app.get("/auth/google", passport.authenticate("google"));
+app.get(
+	"/auth/google",
+	passport.authenticate("google", { scope: ["email", "profile"] })
+);
 
 app.get(
 	"/auth/google/secrets",
