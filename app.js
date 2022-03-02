@@ -27,8 +27,10 @@ app.use(
 	})
 );
 
+/* SECURE COOKIES TRUE MADE GOOGLE SIGN IN / SIGNUP WORK */
 if (app.get("env") === "production") {
 	// Serve secure cookies, requires HTTPS
+	app.set("trust proxy", 1);
 	session.cookie.secure = true;
 }
 
@@ -103,6 +105,9 @@ passport.use(
 /* TwitterStrategy logic */
 passport.use(
 	new TwitterStrategy(
+		/* APIError: You currently have Essential access which includes access to 
+		Twitter API v2 endpoints only. If you need access to this endpoint, you’ll 
+		need to apply for Elevated access via the Developer Portal */
 		{
 			consumerKey: process.env.TWITTER_CONSUMER_KEY,
 			consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
