@@ -11,13 +11,16 @@ body {
 	font-size: 1.5rem;
 	font-family: "Ubuntu";
 	font-weight: 100;
-	letter-spacing: 0.15rem;
 	color: #ebebeb;
-	background-color: #16181ad7;
+	background-color: #171718;
 	border-radius: 0.25rem;
+	padding: 0.5rem;
+}
+.jumbotron {
+	padding-bottom: 1rem;
 }
 hr {
-	padding-top: 5rem;
+	padding-top: 1rem;
 }
 .btn-lg {
 	width: 12rem;
@@ -48,6 +51,9 @@ hr {
 	padding-left: 16;
 	padding-right: 16;
 }
+/* .card-body {
+	padding: 0 !important;
+} */
 .btn-social {
 	margin: 0;
 }
@@ -63,4 +69,19 @@ hr {
 }
 .social-btn:last-child {
 	border: none;
+}
+.col-btn-middle {
+	margin-left: auto !important;
+	margin-right: auto !important;
+	display: inline-block !important;
+	flex: 0 0 auto;
+	width: 100%;
+	justify-content: center !important;
+	display: flex !important;
+}
+.row.row-cols-1 {
+	display: block;
+}
+.col {
+	margin: 1rem;
 }

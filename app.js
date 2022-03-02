@@ -81,7 +81,7 @@ passport.use(
 			userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
 		},
 		function (accessToken, refreshToken, profile, cb) {
-			console.log(profile.displayName);
+			// console.log(profile);
 			User.findOrCreate({ googleId: profile.id }, function (err, user) {
 				return cb(err, user);
 			});
@@ -98,6 +98,7 @@ passport.use(
 			callbackURL: "http://localhost:3000/auth/facebook/secrets",
 		},
 		function (accessToken, refreshToken, profile, cb) {
+			console.log(profile);
 			User.findOrCreate({ facebookId: profile.id }, function (err, user) {
 				return cb(err, user);
 			});
@@ -144,6 +145,7 @@ app.get(
 	passport.authenticate("facebook", { failureRedirect: "/login" }),
 	function (req, res) {
 		// Successful authentication, redirect home.
+		// console.log(req.user);
 		res.redirect("/secrets");
 	}
 );
@@ -228,7 +230,7 @@ app.route("/submit")
 				if (foundUser) {
 					foundUser.secret = submittedSecret;
 					foundUser.save(() => {
-						// save succesfu
+						// save succesful
 						res.redirect("/secrets");
 					});
 				}
