@@ -19,7 +19,7 @@ body {
 hr {
 	padding-top: 5rem;
 }
-.btn {
+.btn-lg {
 	width: 12rem;
 	margin-left: 1rem;
 	margin-right: 1rem;
@@ -48,14 +48,19 @@ hr {
 	padding-left: 16;
 	padding-right: 16;
 }
-.card-body .btn-google {
-	background-color: #ff3c00;
-}
-.card-body .btn-google:hover {
-	background-color: #c92f00;
-	color: #ffffff;
-}
-.btn-google {
-	width: auto;
+.btn-social {
 	margin: 0;
+}
+.fab {
+	margin-top: 0.1rem;
+}
+.h-100 {
+	height: 100% !important;
+}
+.social-btn {
+	margin-top: 8px;
+	border-bottom: 1px solid #dfdfdf;
+}
+.social-btn:last-child {
+	border: none;
 }

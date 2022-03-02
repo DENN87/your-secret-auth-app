@@ -18,7 +18,7 @@
                 <label for="password">Password</label>
                 <input type="password" class="form-control" name="password">
               </div>
-              <button type="submit" class="btn btn-dark margin-left-none">Login</button>
+              <button type="submit" class="btn btn-dark btn-lg margin-left-none">Login</button>
             </form>
 
           </div>
@@ -26,13 +26,19 @@
       </div>
 
       <div class="col-xsm-4">
-        <div class="card">
-          <div class="card-body">
-            <a class="btn btn-block btn-google" href="/auth/google?scope=email" role="button">
-              <i class="fab fa-google"></i>
-              Sign In with Google
-            </a>
+        <div class="card h-100">
+          <div class="card-body social-btn">
+            <a class="btn btn-block btn-social btn-google" href="/auth/google" role="button">
+              <span class="fab fa-google"></span> Log In with Goole </a>
 
+          </div>
+          <div class="card-body social-btn">
+            <a class="btn btn-block btn-social btn-facebook" href="/auth/facebook" role="button">
+              <span class="fab fa-facebook"></span> Log In with Facebook </a>
+          </div>
+          <div class="card-body social-btn">
+            <a class="btn btn-block btn-social btn-linkedin" href="/auth/linkedin" role="button">
+              <span class="fab fa-linkedin"></span> Log In with LinkedIn </a>
           </div>
         </div>
       </div>
