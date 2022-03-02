@@ -40,11 +40,14 @@ app.use(passport.session());
 
 /* Mongoose connnection */
 mongoose.connect("mongodb://localhost:27017/userDB", { useNewUrlParser: true });
+// mongoose.set("useCreateIndex", true);
 
 /* Create userSchema accorind to mongoose Schema() */
 const userSchema = new mongoose.Schema({
 	email: String,
 	password: String,
+	googleId: String,
+	secret: String,
 });
 
 /* hash and salt passwords and save the users into mongoDB*/
@@ -112,11 +115,6 @@ passport.use(
 			consumerKey: process.env.TWITTER_CONSUMER_KEY,
 			consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
 			callbackURL: "http://127.0.0.1:3000/auth/twitter/secrets",
-			access_token_key: process.env.TWITTER_CONSUMER_BEARER_TOKEN,
-			clientID: process.env.TWITTER_CLIENT_ID,
-			clientSecret: process.env.TWITTER_CLIENT_SECRET,
-			authorizationURL: "https://api.twitter.com/oauth/authenticate",
-			tokenURL: "https://api.twitter.com/oauth/access_token",
 		},
 		function (token, tokenSecret, profile, cb) {
 			User.findOrCreate({ twitterId: profile.id }, function (err, user) {
@@ -212,12 +210,42 @@ app.route("/register")
 		);
 	});
 
+app.route("/submit")
+	.get((req, res) => {
+		if (req.isAuthenticated()) {
+			res.render("submit");
+		} else {
+			res.redirect("login");
+		}
+	})
+	.post((req, res) => {
+		const submittedSecret = req.body.secret;
+		// console.log(req.user.id);
+		User.findById(req.user.id, (err, foundUser) => {
+			if (err) {
+				console.log(err);
+			} else {
+				if (foundUser) {
+					foundUser.secret = submittedSecret;
+					foundUser.save(() => {
+						// save succesfu
+						res.redirect("/secrets");
+					});
+				}
+			}
+		});
+	});
+
 app.get("/secrets", (req, res) => {
-	if (req.isAuthenticated()) {
-		res.render("secrets");
-	} else {
-		res.redirect("login");
-	}
+	User.find({ secret: { $ne: null } }, (err, foundUsers) => {
+		if (err) {
+			console.log(err);
+		} else {
+			if (foundUsers) {
+				res.render("secrets", { usersWithSecrets: foundUsers });
+			}
+		}
+	});
 });
 
 app.get("/logout", (req, res) => {
