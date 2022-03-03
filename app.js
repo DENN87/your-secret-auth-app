@@ -23,13 +23,13 @@ app.use(
 		secret: process.env.SESSION_SECRET,
 		resave: false,
 		saveUninitialized: false,
+		maxAge: 86400000,
 		cookie: {},
 	})
 );
 
 /* SECURE COOKIES TRUE MADE GOOGLE SIGN IN / SIGNUP WORK */
 if (app.get("env") === "production") {
-	// Serve secure cookies, requires HTTPS
 	app.set("trust proxy", 1);
 	session.cookie.secure = true;
 }
@@ -46,8 +46,10 @@ mongoose.connect("mongodb://localhost:27017/userDB", { useNewUrlParser: true });
 const userSchema = new mongoose.Schema({
 	email: String,
 	password: String,
-	externalId: String,
 	secret: String,
+	facebookID: String,
+	googleID: String,
+	twitterID: String,
 });
 
 /* hash and salt passwords and save the users into mongoDB*/
@@ -60,14 +62,16 @@ const User = new mongoose.model("User", userSchema);
 passport.use(User.createStrategy());
 
 // encrypting user info (email & pass)
-passport.serializeUser((user, done) => {
-	done(null, user.id);
+passport.serializeUser(function (user, cb) {
+	process.nextTick(function () {
+		cb(null, { id: user.id, username: user.username });
+	});
 });
 
 // decrypting user info (email & pass)
-passport.deserializeUser((id, done) => {
-	User.findById(id, (err, user) => {
-		done(err, user);
+passport.deserializeUser(function (user, cb) {
+	process.nextTick(function () {
+		return cb(null, user);
 	});
 });
 
@@ -80,11 +84,9 @@ passport.use(
 			callbackURL: "http://localhost:3000/auth/facebook/secrets",
 		},
 		function (accessToken, refreshToken, profile, cb) {
-			console.log(`FACEBOOK ID: ${profile.id}`);
 			User.findOrCreate(
-				{ username: profile.displayName, externalId: profile.id },
+				{ username: profile.displayName, facebookID: profile.id },
 				function (err, user) {
-					console.log(`FIND OR CREATE FACEBOOK ID: ${profile.id}`);
 					return cb(err, user);
 				}
 			);
@@ -102,11 +104,9 @@ passport.use(
 			userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
 		},
 		function (accessToken, refreshToken, profile, cb) {
-			console.log(`GOOGLE ID: ${profile.id}`);
 			User.findOrCreate(
-				{ username: profile.displayName, externalId: profile.id },
+				{ username: profile.displayName, googleID: profile.id },
 				function (err, user) {
-					console.log(`FIND OR CREATE Google ID: ${profile.id}`);
 					return cb(err, user);
 				}
 			);
@@ -117,9 +117,6 @@ passport.use(
 /* TwitterStrategy logic */
 passport.use(
 	new TwitterStrategy(
-		/* APIError: You currently have Essential access which includes access to 
-		Twitter API v2 endpoints only. If you need access to this endpoint, you’ll 
-		need to apply for Elevated access via the Developer Portal */
 		{
 			consumerKey: process.env.TWITTER_CONSUMER_KEY,
 			consumerSecret: process.env.TWITTER_CONSUMER_SECRET,
@@ -127,7 +124,7 @@ passport.use(
 		},
 		function (token, tokenSecret, profile, cb) {
 			User.findOrCreate(
-				{ username: profile.displayName, externalId: profile.id },
+				{ username: profile.displayName, twitterID: profile.id },
 				function (err, user) {
 					return cb(err, profile);
 				}
@@ -216,7 +213,12 @@ app.route("/register")
 					console.log(err);
 					res.redirect("/register");
 				} else {
-					passport.authenticate("local")(req, res, () => {
+					passport.authenticate([
+						"local",
+						"passport-google-oauth20",
+						"passport-facebook",
+						"passport-twitter",
+					])(req, res, () => {
 						res.redirect("/secrets");
 					});
 				}
@@ -234,20 +236,41 @@ app.route("/submit")
 	})
 	.post((req, res) => {
 		const submittedSecret = req.body.secret;
-		// console.log(req.user.id);
-		User.findById(req.user.id, (err, foundUser) => {
-			if (err) {
-				console.log(err);
-			} else {
-				if (foundUser) {
-					foundUser.secret = submittedSecret;
-					foundUser.save(() => {
-						// save succesful
-						res.redirect("/secrets");
-					});
+		let valid = mongoose.isValidObjectId(req.user.id);
+		// check if user ID is an valid ObjectID TRUE OR FALSE
+		console.log(`Mongoose Valid: ${valid}`);
+		if (valid) {
+			// it's an ObjectID
+			User.findById(req.user.id, (err, foundUser) => {
+				if (err) {
+					console.log(err);
+				} else {
+					if (foundUser) {
+						foundUser.secret = submittedSecret;
+						foundUser.save(() => {
+							// save succesful
+							res.redirect("/secrets");
+						});
+					}
 				}
-			}
-		});
+			});
+		} else {
+			// nope, twitter id is not object and it needs a look up first
+			console.log("Not ObjectID");
+			User.findOne({ twitterID: req.user.id }, "_id", (err, foundUser) => {
+				if (err) {
+					console.log(err);
+				} else {
+					if (foundUser) {
+						foundUser.secret = submittedSecret;
+						foundUser.save(() => {
+							// save succesful
+							res.redirect("/secrets");
+						});
+					}
+				}
+			});
+		}
 	});
 
 app.get("/secrets", (req, res) => {
